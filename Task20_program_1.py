@@ -4,13 +4,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from time import sleep
 
-class CowinSite:
-    def __init__(self, url):
+class CowinSite:     # Class for Cowinsite to perform and call the action
+    def __init__(self, url):    # Constructor method to initiate the process
         self.url = url
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         self.all_windows = []
 
-    def boot(self):
+    def boot(self):    # Boot function to access the website
         self.driver.get(self.url)
         self.original_window = self.driver.current_window_handle
         self.driver.maximize_window()
@@ -18,31 +18,31 @@ class CowinSite:
         self.sleep(5)
 
     @staticmethod
-    def sleep(seconds):
+    def sleep(seconds):    # Sleep function to delay each processs
         sleep(seconds)
 
-    def click_and_open_faq_new_tab(self):
+    def faq_new_tab(self):    # Function to open the FAQ to open in new tab
         faq_link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'FAQ')]")
         faq_link.click()
-        sleep(5)  # Add a small delay to allow the new tab to open
-        for window in self.driver.window_handles:
+        sleep(5)
+        for window in self.driver.window_handles:    # To open in a new window from the original window
             if window != self.original_window and window not in self.all_windows:
                 self.all_windows.append(window)
 
-    def click_and_open_partners_new_tab(self):
+    def partners_new_tab(self):    # Function to open the partners to open in new tab
         partners_link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'Partners')]")
         partners_link.click()
-        sleep(5)  # Add a small delay to allow the new tab to open
-        for window in self.driver.window_handles:
+        sleep(5)
+        for window in self.driver.window_handles:    ## To open in a new window from the original window
             if window != self.original_window and window not in self.all_windows:
                 self.all_windows.append(window)
 
-    def print_window_ids(self):
+    def window_id(self):    # Function to achieve the window ID
         print("Window/Frame IDs:")
         for window_id in self.all_windows:
             print(window_id)
 
-    def close_new_tabs_and_return_to_home(self):
+    def close_return_to_home(self):    # Function to close the new tab and get to the home window
         for window in self.driver.window_handles:
             if window != self.original_window:
                 self.driver.switch_to.window(window)
@@ -52,20 +52,9 @@ class CowinSite:
 
 url = "https://www.cowin.gov.in/"
 
-# Instantiate CowinSite
-cowin_site = CowinSite(url)
-
-# Open the website
-cowin_site.boot()
-
-# Open new tab for FAQ
-cowin_site.click_and_open_faq_new_tab()
-
-# Open new tab for Partners
-cowin_site.click_and_open_partners_new_tab()
-
-# Print window/frame IDs
-cowin_site.print_window_ids()
-
-# Close new tabs and return to the home page
-cowin_site.close_new_tabs_and_return_to_home()
+cowin_site = CowinSite(url)        # Instantiate CowinSite
+cowin_site.boot()                # Open the website
+cowin_site.faq_new_tab()        # Open new tab for FAQ
+cowin_site.partners_new_tab()    # Open new tab for Partners
+cowin_site.window_id()            # Print window/frame IDs
+cowin_site.close_return_to_home()    # Close new tabs and return to the home page
