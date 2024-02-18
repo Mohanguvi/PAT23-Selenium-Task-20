@@ -4,57 +4,81 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from time import sleep
 
-class CowinSite:     # Class for Cowinsite to perform and call the action
-    def __init__(self, url):    # Constructor method to initiate the process
-        self.url = url
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        self.all_windows = []
 
-    def boot(self):    # Boot function to access the website
+class CowinSite:
+    """Class representing interactions with the Cowin website."""
+
+    def __init__(self):
+        """Initialize the CowinSite class."""
+        self.url = "https://www.cowin.gov.in/"
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        self.original_window = None
+
+    def boot(self):
+        """Method to boot up the Cowin website."""
         self.driver.get(self.url)
         self.original_window = self.driver.current_window_handle
         self.driver.maximize_window()
-        self.all_windows.append(self.original_window)
-        self.sleep(5)
-
-    @staticmethod
-    def sleep(seconds):    # Sleep function to delay each processs
-        sleep(seconds)
-
-    def faq_new_tab(self):    # Function to open the FAQ to open in new tab
-        faq_link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'FAQ')]")
-        faq_link.click()
         sleep(5)
-        for window in self.driver.window_handles:    # To open in a new window from the original window
-            if window != self.original_window and window not in self.all_windows:
-                self.all_windows.append(window)
 
-    def partners_new_tab(self):    # Function to open the partners to open in new tab
-        partners_link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'Partners')]")
-        partners_link.click()
+    def FAQ_tab_window_ID(self):
+        """
+        Method to click on a link, open FAQ in new tab, print the window ID.
+
+        Parameters:
+            The text of the link to be clicked.
+        """
+        link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'FAQ')]")
+        link.click()
         sleep(5)
-        for window in self.driver.window_handles:    ## To open in a new window from the original window
-            if window != self.original_window and window not in self.all_windows:
-                self.all_windows.append(window)
+        # Switch to the second window handle (tab) in the list of window handles
+        new_window = self.driver.window_handles[1]
+        print(f"FAQ Window ID = {new_window}")
+        return new_window
 
-    def window_id(self):    # Function to achieve the window ID
-        print("Window/Frame IDs:")
-        for window_id in self.all_windows:
-            print(window_id)
+    def Partners_tab_window_ID(self):
+        """
+        Method to click on a link, Partners in new tab, print the window ID.
 
-    def close_return_to_home(self):    # Function to close the new tab and get to the home window
-        for window in self.driver.window_handles:
-            if window != self.original_window:
-                self.driver.switch_to.window(window)
-                self.driver.close()
-        sleep(10)
+        Parameters:
+            The text of the link to be clicked.
+        """
+        link = self.driver.find_element(By.XPATH, "//a[contains(text(), 'Partners')]")
+        link.click()
+        sleep(5)
+        # Switch to the third window handle (tab) in the list of window handles
+        new_window = self.driver.window_handles[2]
+        print(f"Partners Window ID = {new_window}")
+        return new_window
+
+    def return_to_home(self):
+        """Method to return to the home page."""
         self.driver.switch_to.window(self.original_window)
 
-url = "https://www.cowin.gov.in/"
+    def close_tab(self, window_id):
+        """Method to close the tab with the specified window ID."""
+        self.driver.switch_to.window(window_id)
+        self.driver.close()
+        self.driver.switch_to.window(self.original_window)
 
-cowin_site = CowinSite(url)        # Instantiate CowinSite
-cowin_site.boot()                # Open the website
-cowin_site.faq_new_tab()        # Open new tab for FAQ
-cowin_site.partners_new_tab()    # Open new tab for Partners
-cowin_site.window_id()            # Print window/frame IDs
-cowin_site.close_return_to_home()    # Close new tabs and return to the home page
+    def quit(self):
+        """Method to quit the browser."""
+        self.driver.quit()
+
+
+# Main part of the script
+if __name__ == "__main__":
+    obj = CowinSite()  # Instantiate CowinSite
+    obj.boot()  # Open the website
+    main_window = obj.original_window
+    faq_window = obj.FAQ_tab_window_ID()    # Open FAQ page in new tab, print window ID
+    partners_window = obj.Partners_tab_window_ID()  # Open Partners page in new tab, print window ID
+    obj.close_tab(partners_window)  # Close Partners tab
+    sleep(5)
+    obj.close_tab(faq_window)   # Close FAQ window
+    sleep(5)
+    obj.quit()  # Quit the browser
+
+'''Output: 
+            FAQ Window ID = 57F2C085A64A77AF7B4D08110DFF3805
+            Partners Window ID = 6EEA494ADBF21857F86A33EDA35756D0'''
