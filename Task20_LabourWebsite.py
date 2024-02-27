@@ -133,7 +133,7 @@ class LabourWebsite:
 
     def download_photos(self):
         """Function to download photos from the photo gallery."""
-        # method 1
+        
         self.wait(5)
         for i in range(1, 11):
             image_xpath = f'//*[@id="fontSize"]/div/div/div[3]/div[2]/div[1]/div/div/div[2]/div[2]/table/tbody/tr[{i}]/td[3]/div[1]/div/img'
