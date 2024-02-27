@@ -103,7 +103,7 @@ class LabourWebsite:
             document_url = self.driver.current_url      # fetch the url of the document page
             response = requests.get(document_url)
             if response.status_code == 200:
-                filepath = "December_monthly_Progress_Report.pdf"
+                filepath = "Latest_monthly_Progress_Report.pdf"
                 with open(filepath, "wb") as f:     # open the file get the content and write in the pdf file.
                     f.write(response.content)
                     print("Report downloaded successfully")
@@ -117,68 +117,43 @@ class LabourWebsite:
 
     def go_to_photo_gallery(self):
         """Function to navigate to the photo gallery page."""
+        self.close_banner()
+        self.wait(2)
         try:
-            # wait the page until it reloaded and then Hover over the Media menu and click on the Photo Gallery page
-            media_menu = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '//*[@id="nav"]/li[10]')))
-            self.action.move_to_element(media_menu).perform()
+
+            # Hover over the Media menu and click on the Photo Gallery page
+            documents_menu = self.findElementByXPATH('//*[@id="nav"]/li[10]')
+            self.action.move_to_element(documents_menu).perform()
             self.wait(3)
-            WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id="nav"]/li[10]/ul/li[2]'))).click()
-            self.wait(20)
+            # Navigating to the photo gallery page
+            self.findElementByXPATH('//*[@id="nav"]/li[10]/ul/li[2]').click()
+            self.wait(5)
         except Exception as e:
             print(f"Error navigating to Photo gallery: {e}")
 
     def download_photos(self):
         """Function to download photos from the photo gallery."""
-        try:
-            # Find the parent element containing the photos
-            parent_element = self.driver.find_element(By.XPATH,
-                                                      '//*[@id="fontSize"]/div/div/div[3]/div[2]/div[1]/div/div')
-
-            # Find all img elements within the parent element
-            img_elements = parent_element.find_elements(By.TAG_NAME, 'img')
-
-            # Extract src attributes from img elements to get image URLs and names
-            image_info = [(img_element.get_attribute('src'), img_element.get_attribute('alt')) for img_element in
-                          img_elements]
-
-            # Create a folder to store photos
-            folder_name = "Labour_Photos"
-            os.makedirs(folder_name, exist_ok=True)
-
-            # Download the images
-            for idx, (url, name) in enumerate(image_info[:10], 1):
-                if not name:
-                    name = f"photo_{idx}.jpg"
-                else:
-                    # Replace invalid characters with underscores
-                    name = name.replace('/', '_').replace('\\', '_').replace(':', '_') + ".jpg"
-                filepath = os.path.join(folder_name, name)
-                self.download_file(url, filepath)
-
-            print("Images downloaded successfully")
-        except Exception as e:
-            print(f"Error downloading photos: {e}")
-
-    def download_file(self, url, filepath):
-        """Function to download a file from a URL."""
-        try:
+        # method 1
+        self.wait(5)
+        for i in range(1, 11):
+            image_xpath = f'//*[@id="fontSize"]/div/div/div[3]/div[2]/div[1]/div/div/div[2]/div[2]/table/tbody/tr[{i}]/td[3]/div[1]/div/img'
+            url = self.findElementByXPATH(image_xpath).get_attribute('src')
+            print("Image URL is :", url)
             response = requests.get(url)
             if response.status_code == 200:
-                with open(filepath, "wb") as f:
-                    f.write(response.content)
-                print(f"Photo downloaded to {filepath}")
+                filePath = f"Labour_Photos/image {i}.jpg"
+                f = open(filePath, 'wb')
+                f.write(response.content)
+                f.close()
             else:
-                print(f"Failed to download photo from {url}")
-        except Exception as e:
-            print(f"Error downloading photo from {url}: {e}")
+                print("Error downloading the images")
 
 
-url = "https://labour.gov.in/"
-obj = LabourWebsite(url)
-obj.go_to_monthly_progross_report()
-obj.download_report()
-obj.go_to_photo_gallery()
-obj.download_photos()
-obj.quit()
+if __name__ == "__main__":
+    url = "https://labour.gov.in/"
+    obj = LabourWebsite(url)
+    obj.go_to_monthly_progross_report()
+    obj.download_report()
+    obj.go_to_photo_gallery()
+    obj.download_photos()
+    obj.quit()
